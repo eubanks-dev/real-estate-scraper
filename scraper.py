@@ -1,6 +1,6 @@
 # scraper.py
 
-from flask import Flask
+from flask import Flask, render_template
 import requests
 from bs4 import BeautifulSoup
 import sys
@@ -10,12 +10,21 @@ app = Flask(__name__)
 
 @app.route("/scraped-data")
 def index():
-	print("About to parse realpage data", file=sys.stderr)
 	relevant_data = parse_realpage()	
-	print(relevant_data, file=sys.stderr)
-	return "done"
+	# print(relevant_data, file=sys.stderr)
+
+	'''
+	This template creates an HTML table with two columns: "Property Name" and "Unit Count". 
+	It iterates over the dictionary passed in as "table_data", and generates a new row in the table for each property.
+	'''
+	return render_template('properties_table_template.html', table_data=relevant_data)
 
 def parse_realpage():
+	"""Parse Realpage data and store relevant fields in a dictionary
+
+	Returns:
+		dictionary: dictionary containing relevant fields from Realpage property data
+	"""
 	realpage_data = json.loads(hardcoded_realpage_data())
 	property_dict = {}
 
