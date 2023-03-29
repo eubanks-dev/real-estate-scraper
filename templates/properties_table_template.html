@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Properties</title>
+    <title>Properties from Realpage</title>
     <style>
         table {
             border-collapse: collapse;
@@ -26,13 +26,19 @@
     <table>
         <tr>
             <th>Property Name</th>
+            <th>City</th>
+            <th>State</th>
             <th>Unit Count</th>
+            <th>Occupancy</th>
         </tr>
-        {% for name, count in table_data.items() %}
-        <tr>
-            <td>{{ name }}</td>
-            <td>{{ count }}</td>
-        </tr>
+        {% for property in table_data %}
+            <tr>
+                <td>{{property['name']}}</td>
+                <td>{{property['city']}}</td>
+                <td>{{property['state']}}</td>
+                <td>{{property['unitcount']}}</td>
+                <td>{{property['occupancy']}}</td>
+            </tr>
         {% endfor %}
     </table>
 </body>
