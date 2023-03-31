@@ -22,7 +22,7 @@ def index():
 	It iterates over the list of dictionaries passed in as "table_data", and 
 	generates a new row in the table for each property in the list.
 	'''
-	return render_template('properties_table_template.html', table_data=relevant_data)
+	return render_template('realpage_properties_template.html', table_data=relevant_data)
 
 def parse_realpage():
 	"""Parse Realpage data and store relevant fields in a dictionary
