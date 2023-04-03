@@ -1,6 +1,6 @@
 # scraper.py
 
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 import requests
 from bs4 import BeautifulSoup
 import sys
@@ -9,20 +9,41 @@ import json
 app = Flask(__name__)
 
 @app.route("/parsed-realpage-data")
-def index():
-	"""This route displays scraped/parsed data from real estate data sources
+def parsed_realpage_data():
+	"""This route displays the raw, unfiltered property data parsed from Realpage source
 
 	Returns:
 		Jinja2 Template: A rendered HTML page dispalying a table of real estate property data
 	"""
-	relevant_data = parse_realpage()	
+	table_data = parse_realpage()	
 
 	'''
 	This template creates an HTML page with a table of property data. 
 	It iterates over the list of dictionaries passed in as "table_data", and 
 	generates a new row in the table for each property in the list.
 	'''
-	return render_template('realpage_properties_template.html', table_data=relevant_data)
+	return render_template('realpage_properties_template.html', table_data=table_data)
+
+@app.route("/realpage-data-with-filtering")
+def realpage_data_with_filtering():
+	"""This route is called by DataTables.js to retrieve Realpage data with sorting, searching, and pagination capabilities
+
+	Returns:
+		Response object: Fields needed by DataTables.js to render the table 
+	"""
+	filtered_property_list = parse_realpage()	
+	
+	# Check for search parameter and perform search filtering
+	search_string = request.args.get('search[value]')
+	if search_string:
+		filtered_property_list = search_property_fields(filtered_property_list, search_string)
+		
+	'''
+	This template creates an HTML page with a table of property data. 
+	It iterates over the list of dictionaries passed in as "table_data", and 
+	generates a new row in the table for each property in the list.
+	'''
+	return render_template('realpage_properties_template.html', table_data=filtered_property_list)
 
 def parse_realpage():
 	"""Parse Realpage data and store relevant fields in a dictionary
@@ -64,6 +85,19 @@ def locally_stored_realpage_data():
 
 	return data
 
+
+def search_property_fields(property_list, search_string):
+    """
+    Returns the subset of the properties whose name, city, or state contains the search string.
+
+    :param property_list: a list of dictionaries representing real estate properties
+    :param search_string: the search string to look for in the "name", "city", or "state" fields
+    :return: the subset of the property_list that contains the search_string in the "name", "city",
+             or "state" fields
+    """
+    return [d for d in property_list if search_string in d['name'] or
+                                          search_string in d['city'] or
+                                          search_string in d['state']]
 def scrape_zillow():
 	""" [NOT WORKING] Experiment - Use BeautifulSoup to parse scraped data from Zillow
 	"""
