@@ -37,6 +37,12 @@ def realpage_data_with_filtering():
 	search_string = request.args.get('search[value]')
 	if search_string:
 		filtered_property_list = search_property_fields(filtered_property_list, search_string)
+
+	# Check for order parameter and perform sorting
+	order_column = request.args.get('order[0][column]', type=int)
+	if order_column is not None:
+		order_dir = request.args.get('order[0][dir]')
+		filtered_property_list = sort_list_of_dictionaries(filtered_property_list, order_column, order_dir)
 		
 	'''
 	This template creates an HTML page with a table of property data. 
@@ -98,6 +104,38 @@ def search_property_fields(property_list, search_string):
     return [d for d in property_list if search_string in d['name'] or
                                           search_string in d['city'] or
                                           search_string in d['state']]
+def sort_list_of_dictionaries(dict_list, order_column, order_dir="asc"):
+    """
+    Sort a list of dictionaries based on the specified column and direction.
+
+    Args:
+        dict_list (list of dict): The data to be sorted.
+        order_column (int): The index of the column to sort by.
+        order_dir (str): The direction to sort in ("asc" or "desc").  Defaulted to "asc".
+
+    Returns:
+        list of dict: The sorted data.
+    """
+    
+	# Check if the specified order column is out of range.
+    if order_column < 0 or order_column >= len(dict_list[0]):
+        raise ValueError("Order column index out of range")
+    
+    # Determine the key to sort by based on the specified column.
+    key = list(dict_list[0].keys())[order_column]
+    print("Sorting on key: ", key, file=sys.stderr)
+
+    # Sort the data based on the key and direction.
+    # In the special case of the "Occupancy" column, remove the '%' sign and do numeric sorting instead of alphabetical
+    if key is 'occupancy':
+        key_func = lambda x: float(x[key].replace('%',''))
+        sorted_data = sorted(dict_list, key=key_func, reverse=(order_dir == "desc"))
+	# else just sort alphabetically
+    else:
+        sorted_data = sorted(dict_list, key=lambda x: x[key], reverse=(order_dir == "desc"))
+
+    return sorted_data
+
 def scrape_zillow():
 	""" [NOT WORKING] Experiment - Use BeautifulSoup to parse scraped data from Zillow
 	"""
